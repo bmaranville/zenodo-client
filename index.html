@@ -24,7 +24,9 @@
   const issuer = "https://sandbox.zenodo.org/oauth/authorize";
   const algorithm = "oauth2";
   const client_id = "ioRFbwJlEfQhxWcThVYu3ZU3vv58BDQye67HBmhN";
-  const redirect_uri = "http://localhost:8000/index.html";
+  // add 'index.html' to end of path if it is missing...
+  const pathname = location.pathname.replace(/\/$/, '/index.html')
+  const redirect_uri = `${location.origin}/${pathname}`;
 
   function generate_random_hex(bytes = 16) {
     // output will be string of length = 2 * bytes
