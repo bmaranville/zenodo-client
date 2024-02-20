@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "oauth4webapi_cdn": "https://cdn.jsdelivr.net/npm/oauth4webapi@2.10.3/+esm",
+          "oauth4webapi": "./node_modules/oauth4webapi/build/index.js",
+          "@badgateway/oauth2-client": "https://cdn.jsdelivr.net/npm/@badgateway/oauth2-client@2.3.0/+esm"
+        }
+      }
+    </script>
+   
+</head>
+<body>
+  Hello!
+  <button id="login">Login</button>
+  <div id="login_state"></div>
+</body>
+<script type="module">
+  const issuer = "https://sandbox.zenodo.org/oauth/authorize";
+  const algorithm = "oauth2";
+  const client_id = "ioRFbwJlEfQhxWcThVYu3ZU3vv58BDQye67HBmhN";
+  const redirect_uri = "http://localhost:8000/index.html";
+
+  function generate_random_hex(bytes = 16) {
+    // output will be string of length = 2 * bytes
+    let arr = new Uint8Array(bytes);
+    crypto.getRandomValues(arr)
+    return [...arr].map(v => v.toString(16).padStart(2, '0')).join('')
+  }
+
+  async function authorize() {
+    const state = generate_random_hex(16);
+    localStorage.zenodo_login_state = state;
+
+    const authorizationUrl = new URL(issuer);
+    authorizationUrl.searchParams.set("client_id", client_id);
+    authorizationUrl.searchParams.set("redirect_uri", redirect_uri);
+    authorizationUrl.searchParams.set("response_type", "token");
+    authorizationUrl.searchParams.set("scope", "deposit:write deposit:actions user:email");
+    authorizationUrl.searchParams.set("state", state);
+
+    window.location = authorizationUrl;
+  }
+  
+  const login_button = document.getElementById("login");
+  login_button.onclick = authorize;
+
+  const currentURL = new URL(window.location);
+  const params = new URLSearchParams(currentURL.hash.slice(1))
+  const token = params.get('access_token');
+  console.log([...params.entries()]);
+  globalThis.token = token;
+  if (token !== null) {
+    login_button.style.display = 'none';
+    window.history.replaceState(null, "", `${window.location.origin}${window.location.pathname}`);
+  }
+
+</script>
+</html>
